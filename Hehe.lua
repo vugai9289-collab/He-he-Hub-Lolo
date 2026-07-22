@@ -1,84 +1,116 @@
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
 
 local player = Players.LocalPlayer
 
--- 🔔 THÔNG BÁO KIỂM TRA
 pcall(function()
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "DUC ANH HUB v3.1",
-        Text = "Đã cập nhật Tab Info Rainbow cực cháy!",
-        Duration = 5
-    })
+    local snd = Instance.new("Sound")
+    snd.SoundId = "rbxassetid://9060817403"
+    snd.Volume = 1
+    snd.Parent = SoundService
+    snd:Play()
+    snd.Ended:Connect(function() snd:Destroy() end)
 end)
 
--- Xóa GUI cũ nếu chạy đè
+local function playClickSound()
+    pcall(function()
+        local snd = Instance.new("Sound")
+        snd.SoundId = "rbxassetid://9060817403"
+        snd.Volume = 0.5
+        snd.Parent = SoundService
+        snd:Play()
+        snd.Ended:Connect(function() snd:Destroy() end)
+    end)
+end
+
 pcall(function()
-    if CoreGui:FindFirstChild("NutTronAnhV2") then
-        CoreGui.NutTronAnhV2:Destroy()
-    end
-    if player.PlayerGui:FindFirstChild("NutTronAnhV2") then
-        player.PlayerGui.NutTronAnhV2:Destroy()
-    end
+    if CoreGui:FindFirstChild("NutTronAnhV2") then CoreGui.NutTronAnhV2:Destroy() end
+    if player.PlayerGui:FindFirstChild("NutTronAnhV2") then player.PlayerGui.NutTronAnhV2:Destroy() end
 end)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "NutTronAnhV2"
 gui.ResetOnSpawn = false
+pcall(function() gui.Parent = CoreGui end)
+if not gui.Parent then gui.Parent = player:WaitForChild("PlayerGui") end
 
-local success = pcall(function()
-    gui.Parent = CoreGui
-end)
-if not success then
-    gui.Parent = player:WaitForChild("PlayerGui")
-end
-
--- ==========================================
--- 🟢 1. NÚT TRÒN DI ĐỘNG (BỆ PHÕNG)
--- ==========================================
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
+-- NÚT TRÒN
+local MainFrame = Instance.new("Frame", gui)
 MainFrame.Size = UDim2.new(0, 50, 0, 50)
 MainFrame.Position = UDim2.new(0.1, 0, 0.5, -25)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.BackgroundTransparency = 0.3
 MainFrame.Active = true
-MainFrame.Parent = gui
-
+MainFrame.Visible = false
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(1, 0)
 
-local ActionButton = Instance.new("ImageButton")
-ActionButton.Name = "ActionButton"
+local ActionButton = Instance.new("ImageButton", MainFrame)
 ActionButton.Size = UDim2.new(0.85, 0, 0.85, 0)
 ActionButton.Position = UDim2.new(0.075, 0, 0.075, 0)
 ActionButton.BackgroundTransparency = 1
 ActionButton.Image = "rbxassetid://130940118"
-ActionButton.Active = true
-ActionButton.Parent = MainFrame
-
 Instance.new("UICorner", ActionButton).CornerRadius = UDim.new(1, 0)
 
 local FrameStroke = Instance.new("UIStroke", MainFrame)
 FrameStroke.Thickness = 3
-FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-local connection
-connection = RunService.RenderStepped:Connect(function()
-    if not MainFrame or not MainFrame.Parent then
-        if connection then connection:Disconnect() end
-        return
+RunService.RenderStepped:Connect(function()
+    if MainFrame and MainFrame.Parent then
+        FrameStroke.Color = Color3.fromHSV((os.clock() % 4) / 4, 1, 1)
     end
-    local hue = (os.clock() % 4) / 4
-    FrameStroke.Color = Color3.fromHSV(hue, 1, 1)
 end)
 
--- ==========================================
--- 📂 2. GIAO DIỆN MENU & HỆ THỐNG TAB
--- ==========================================
-local MenuFrame = Instance.new("Frame")
+-- LOADING
+local LoadScreen = Instance.new("Frame", gui)
+LoadScreen.Size = UDim2.new(0, 300, 0, 150)
+LoadScreen.Position = UDim2.new(0.5, -150, 0.5, -75)
+LoadScreen.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+LoadScreen.BackgroundTransparency = 0.1
+Instance.new("UICorner", LoadScreen).CornerRadius = UDim.new(0, 16)
+
+local LoadStroke = Instance.new("UIStroke", LoadScreen)
+LoadStroke.Thickness = 2
+RunService.RenderStepped:Connect(function()
+    if LoadScreen and LoadScreen.Parent then
+        LoadStroke.Color = Color3.fromHSV((os.clock() % 4) / 4, 1, 1)
+    end
+end)
+
+local LoadTitle = Instance.new("TextLabel", LoadScreen)
+LoadTitle.Size = UDim2.new(1, 0, 0, 40)
+LoadTitle.Position = UDim2.new(0, 0, 0, 20)
+LoadTitle.BackgroundTransparency = 1
+LoadTitle.Text = "DucAnhHub"
+LoadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadTitle.TextSize = 20
+LoadTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+
+local BarBg = Instance.new("Frame", LoadScreen)
+BarBg.Size = UDim2.new(0.85, 0, 0, 10)
+BarBg.Position = UDim2.new(0.075, 0, 0, 75)
+BarBg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+BarBg.BorderSizePixel = 0
+Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame", BarBg)
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+BarFill.BorderSizePixel = 0
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+local PercentLabel = Instance.new("TextLabel", LoadScreen)
+PercentLabel.Size = UDim2.new(1, 0, 0, 30)
+PercentLabel.Position = UDim2.new(0, 0, 0, 95)
+PercentLabel.BackgroundTransparency = 1
+PercentLabel.Text = "Loading 0%"
+PercentLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+PercentLabel.TextSize = 12
+PercentLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
+
+-- MENU CHÍNH
+local MenuFrame = Instance.new("Frame", gui)
 MenuFrame.Name = "MenuFrame"
 MenuFrame.Size = UDim2.new(0, 340, 0, 320)
 MenuFrame.Position = UDim2.new(0.5, -170, 0.5, -160)
@@ -87,34 +119,24 @@ MenuFrame.BackgroundTransparency = 0.1
 MenuFrame.Visible = false
 MenuFrame.Active = true
 MenuFrame.Draggable = true
-MenuFrame.Parent = gui
-
 Instance.new("UICorner", MenuFrame).CornerRadius = UDim.new(0, 18)
 
 local MenuStroke = Instance.new("UIStroke", MenuFrame)
 MenuStroke.Thickness = 2
 MenuStroke.Color = Color3.fromRGB(70, 130, 255)
 
--- Thanh bên trái (LeftBar)
-local LeftBar = Instance.new("Frame")
-LeftBar.Name = "LeftBar"
+local LeftBar = Instance.new("Frame", MenuFrame)
 LeftBar.Size = UDim2.new(0.22, 0, 1, 0)
-LeftBar.Position = UDim2.new(0, 0, 0, 0)
 LeftBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 LeftBar.BorderSizePixel = 0
-LeftBar.Parent = MenuFrame
+Instance.new("UICorner", LeftBar).CornerRadius = UDim.new(0, 18)
 
-local LeftBarCorner = Instance.new("UICorner", LeftBar)
-LeftBarCorner.CornerRadius = UDim.new(0, 18)
-
-local UIListLayoutTab = Instance.new("UIListLayout")
-UIListLayoutTab.Padding = UDim.new(0, 10)
+local UIListLayoutTab = Instance.new("UIListLayout", LeftBar)
+UIListLayoutTab.Padding = UDim.new(0, 8)
 UIListLayoutTab.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIListLayoutTab.VerticalAlignment = Enum.VerticalAlignment.Center
-UIListLayoutTab.Parent = LeftBar
 
--- Tiêu đề Menu
-local TitleLabel = Instance.new("TextLabel")
+local TitleLabel = Instance.new("TextLabel", MenuFrame)
 TitleLabel.Size = UDim2.new(0.75, 0, 0, 50)
 TitleLabel.Position = UDim2.new(0.24, 10, 0, 0)
 TitleLabel.BackgroundTransparency = 1
@@ -123,10 +145,8 @@ TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 15
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-TitleLabel.Parent = MenuFrame
 
--- Nút tắt Menu (Dấu X)
-local CloseButton = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton", MenuFrame)
 CloseButton.Size = UDim2.new(0, 28, 0, 28)
 CloseButton.Position = UDim2.new(1, -36, 0, 11)
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
@@ -134,123 +154,322 @@ CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 13
 CloseButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-CloseButton.Parent = MenuFrame
 Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(1, 0)
 
--- Khung chứa Container Tab
-local ContainerHolder = Instance.new("Folder")
-ContainerHolder.Parent = MenuFrame
+CloseButton.MouseButton1Click:Connect(function()
+    playClickSound()
+    MenuFrame.Visible = false
+end)
+
+local ContainerHolder = Instance.new("Folder", MenuFrame)
 
 local function createTabContainer()
-    local sf = Instance.new("ScrollingFrame")
+    local sf = Instance.new("ScrollingFrame", ContainerHolder)
     sf.Size = UDim2.new(0.75, -10, 1, -65)
     sf.Position = UDim2.new(0.24, 10, 0, 55)
     sf.BackgroundTransparency = 1
-    sf.CanvasSize = UDim2.new(0, 0, 0, 280)
+    sf.CanvasSize = UDim2.new(0, 0, 0, 420)
     sf.ScrollBarThickness = 3
     sf.Visible = false
-    sf.Parent = ContainerHolder
-
-    local layout = Instance.new("UIListLayout")
+    local layout = Instance.new("UIListLayout", sf)
     layout.Padding = UDim.new(0, 8)
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    layout.Parent = sf
     return sf
 end
 
-local Tab1Container = createTabContainer() -- Tab 1: Info
-local Tab2Container = createTabContainer() -- Tab 2: Slap Tower
+local Tab1Container = createTabContainer()
+local Tab2Container = createTabContainer()
+local Tab3Container = createTabContainer()
 Tab1Container.Visible = true
 
 local function createTabButton(name, targetContainer)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.85, 0, 0, 36)
+    local btn = Instance.new("TextButton", LeftBar)
+    btn.Size = UDim2.new(0.85, 0, 0, 32)
     btn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
     btn.Text = name
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 12
+    btn.TextSize = 11
     btn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-    btn.Parent = LeftBar
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
 
     btn.MouseButton1Click:Connect(function()
+        playClickSound()
         Tab1Container.Visible = false
         Tab2Container.Visible = false
+        Tab3Container.Visible = false
         targetContainer.Visible = true
     end)
 end
 
-createTabButton("Info", Tab1Container)
+createTabButton("MM2", Tab1Container)
 createTabButton("Slap Tower", Tab2Container)
+createTabButton("Cài Đặt", Tab3Container)
 
--- ==========================================
--- 📄 NỘI DUNG TAB 1: INFO (RAINBOW TEXT)
--- ==========================================
-local InfoLabel = Instance.new("TextLabel")
-InfoLabel.Size = UDim2.new(1, 0, 0, 220)
-InfoLabel.BackgroundTransparency = 1
-InfoLabel.Text = "Script Việt Nam Này Lấy Cảm Hứng Từ Slap Tower và nên có vài chức năng vật vì đây là bản v1 Tôi sẽ update nhiều hơn\n\nTiktok:Yuya_Lwo"
-InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoLabel.TextSize = 13
-InfoLabel.TextWrapped = true
-InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
-InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
-InfoLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-InfoLabel.Parent = Tab1Container
-
--- Hiệu ứng Rainbow cho chữ ở Tab Info
-local infoConnection
-infoConnection = RunService.RenderStepped:Connect(function()
-    if not InfoLabel or not InfoLabel.Parent then
-        if infoConnection then infoConnection:Disconnect() end
-        return
-    end
-    local hue = (os.clock() % 4) / 4
-    InfoLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
-end)
-
--- ==========================================
--- 🛠️ NỘI DUNG TAB 2: SLAP TOWER (CHỨC NĂNG)
--- ==========================================
 local function createMenuButton(name, parentContainer, callback)
-    local btn = Instance.new("TextButton")
+    local btn = Instance.new("TextButton", parentContainer)
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     btn.Text = name
     btn.TextColor3 = Color3.fromRGB(230, 230, 230)
     btn.TextSize = 13
     btn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
-    btn.Parent = parentContainer
-    
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
     
     local activeState = false
     btn.MouseButton1Click:Connect(function()
+        playClickSound()
         activeState = not activeState
-        local targetColor = activeState and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(35, 35, 42)
-        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = targetColor}):Play()
+        btn.BackgroundColor3 = activeState and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(35, 35, 42)
         if callback then callback(activeState, btn) end
     end)
     return btn
 end
 
--- 1. Highlights
+-- TAB 1: MM2
+local MM2Title = Instance.new("TextLabel", Tab1Container)
+MM2Title.Size = UDim2.new(1, 0, 0, 25)
+MM2Title.BackgroundTransparency = 1
+MM2Title.Text = "⚡ Murder Mystery 2 Features"
+MM2Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+MM2Title.TextSize = 13
+MM2Title.TextXAlignment = Enum.TextXAlignment.Left
+MM2Title.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+
+local SpeedBox = Instance.new("TextBox", Tab1Container)
+SpeedBox.Size = UDim2.new(1, 0, 0, 36)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+SpeedBox.PlaceholderText = "Nhập Speed (1 - 6000)"
+SpeedBox.Text = ""
+SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+SpeedBox.TextSize = 12
+SpeedBox.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
+Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 10)
+
+SpeedBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        playClickSound()
+        local val = tonumber(SpeedBox.Text)
+        if val then
+            if val < 1 then val = 1 end
+            if val > 6000 then val = 6000 end
+            pcall(function() player.Character.Humanoid.WalkSpeed = val end)
+        end
+    end
+end)
+
+local mm2EspConnection
+createMenuButton("ESP MM2 (Killer & Police)", Tab1Container, function(state)
+    if state then
+        mm2EspConnection = RunService.RenderStepped:Connect(function()
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character then
+                    local isKiller = false
+                    local isPolice = false
+                    
+                    local function checkTool(item)
+                        if item:IsA("Tool") then
+                            local nameLower = string.lower(item.Name)
+                            if string.find(nameLower, "knife") or string.find(nameLower, "dao") then
+                                isKiller = true
+                            elseif string.find(nameLower, "gun") or string.find(nameLower, "revolver") or string.find(nameLower, "súng") then
+                                isPolice = true
+                            end
+                        end
+                    end
+
+                    for _, item in ipairs(p.Character:GetChildren()) do checkTool(item) end
+                    if p.Backpack then
+                        for _, item in ipairs(p.Backpack:GetChildren()) do checkTool(item) end
+                    end
+                    
+                    local head = p.Character:FindFirstChild("Head")
+                    
+                    if isKiller then
+                        if not p.Character:FindFirstChild("MM2_Killer_Highlight") then
+                            local hl = Instance.new("Highlight", p.Character)
+                            hl.Name = "MM2_Killer_Highlight"
+                            hl.Adornee = p.Character
+                            hl.FillColor = Color3.fromRGB(255, 0, 0)
+                            hl.FillTransparency = 0.4
+                            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        end
+                        if head and not head:FindFirstChild("MM2_Killer_Tag") then
+                            if head:FindFirstChild("MM2_Police_Tag") then head.MM2_Police_Tag:Destroy() end
+                            local bg = Instance.new("BillboardGui", head)
+                            bg.Name = "MM2_Killer_Tag"
+                            bg.Size = UDim2.new(0, 100, 0, 40)
+                            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+                            bg.AlwaysOnTop = true
+                            
+                            local txt = Instance.new("TextLabel", bg)
+                            txt.Size = UDim2.new(1, 0, 1, 0)
+                            txt.BackgroundTransparency = 1
+                            txt.Text = "⚠️ [ KILLER ] ⚠️"
+                            txt.TextColor3 = Color3.fromRGB(255, 0, 0)
+                            txt.TextSize = 14
+                            txt.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+                            txt.TextStrokeTransparency = 0
+                            txt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                        end
+                    elseif isPolice then
+                        if not p.Character:FindFirstChild("MM2_Police_Highlight") then
+                            local hl = Instance.new("Highlight", p.Character)
+                            hl.Name = "MM2_Police_Highlight"
+                            hl.Adornee = p.Character
+                            hl.FillColor = Color3.fromRGB(0, 150, 255)
+                            hl.FillTransparency = 0.4
+                            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        end
+                        if head and not head:FindFirstChild("MM2_Police_Tag") then
+                            if head:FindFirstChild("MM2_Killer_Tag") then head.MM2_Killer_Tag:Destroy() end
+                            local bg = Instance.new("BillboardGui", head)
+                            bg.Name = "MM2_Police_Tag"
+                            bg.Size = UDim2.new(0, 100, 0, 40)
+                            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+                            bg.AlwaysOnTop = true
+                            
+                            local txt = Instance.new("TextLabel", bg)
+                            txt.Size = UDim2.new(1, 0, 1, 0)
+                            txt.BackgroundTransparency = 1
+                            txt.Text = "🛡️ [ POLICE ] 🛡️"
+                            txt.TextColor3 = Color3.fromRGB(0, 150, 255)
+                            txt.TextSize = 14
+                            txt.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+                            txt.TextStrokeTransparency = 0
+                            txt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                        end
+                    else
+                        if p.Character:FindFirstChild("MM2_Killer_Highlight") then p.Character.MM2_Killer_Highlight:Destroy() end
+                        if p.Character:FindFirstChild("MM2_Police_Highlight") then p.Character.MM2_Police_Highlight:Destroy() end
+                        if head then
+                            if head:FindFirstChild("MM2_Killer_Tag") then head.MM2_Killer_Tag:Destroy() end
+                            if head:FindFirstChild("MM2_Police_Tag") then head.MM2_Police_Tag:Destroy() end
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        if mm2EspConnection then mm2EspConnection:Disconnect() end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p.Character then
+                if p.Character:FindFirstChild("MM2_Killer_Highlight") then p.Character.MM2_Killer_Highlight:Destroy() end
+                if p.Character:FindFirstChild("MM2_Police_Highlight") then p.Character.MM2_Police_Highlight:Destroy() end
+                local head = p.Character:FindFirstChild("Head")
+                if head then
+                    if head:FindFirstChild("MM2_Killer_Tag") then head.MM2_Killer_Tag:Destroy() end
+                    if head:FindFirstChild("MM2_Police_Tag") then head.MM2_Police_Tag:Destroy() end
+                end
+            end
+        end
+    end
+end)
+
+local policeEspConnection
+createMenuButton("ESP Police (Chỉ hiện Cảnh sát)", Tab1Container, function(state)
+    if state then
+        policeEspConnection = RunService.RenderStepped:Connect(function()
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character then
+                    local isPolice = false
+                    local function checkTool(item)
+                        if item:IsA("Tool") then
+                            local nameLower = string.lower(item.Name)
+                            if string.find(nameLower, "gun") or string.find(nameLower, "revolver") or string.find(nameLower, "súng") then
+                                isPolice = true
+                            end
+                        end
+                    end
+                    for _, item in ipairs(p.Character:GetChildren()) do checkTool(item) end
+                    if p.Backpack then
+                        for _, item in ipairs(p.Backpack:GetChildren()) do checkTool(item) end
+                    end
+                    
+                    local head = p.Character:FindFirstChild("Head")
+                    if isPolice then
+                        if not p.Character:FindFirstChild("Only_Police_Highlight") then
+                            local hl = Instance.new("Highlight", p.Character)
+                            hl.Name = "Only_Police_Highlight"
+                            hl.Adornee = p.Character
+                            hl.FillColor = Color3.fromRGB(0, 150, 255)
+                            hl.FillTransparency = 0.4
+                            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        end
+                        if head and not head:FindFirstChild("Only_Police_Tag") then
+                            local bg = Instance.new("BillboardGui", head)
+                            bg.Name = "Only_Police_Tag"
+                            bg.Size = UDim2.new(0, 100, 0, 40)
+                            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+                            bg.AlwaysOnTop = true
+                            
+                            local txt = Instance.new("TextLabel", bg)
+                            txt.Size = UDim2.new(1, 0, 1, 0)
+                            txt.BackgroundTransparency = 1
+                            txt.Text = "🛡️ [ POLICE ] 🛡️"
+                            txt.TextColor3 = Color3.fromRGB(0, 150, 255)
+                            txt.TextSize = 14
+                            txt.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+                            txt.TextStrokeTransparency = 0
+                            txt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                        end
+                    else
+                        if p.Character:FindFirstChild("Only_Police_Highlight") then p.Character.Only_Police_Highlight:Destroy() end
+                        if head and head:FindFirstChild("Only_Police_Tag") then head.Only_Police_Tag:Destroy() end
+                    end
+                end
+            end
+        end)
+    else
+        if policeEspConnection then policeEspConnection:Disconnect() end
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p.Character then
+                if p.Character:FindFirstChild("Only_Police_Highlight") then p.Character.Only_Police_Highlight:Destroy() end
+                local head = p.Character:FindFirstChild("Head")
+                if head and head:FindFirstChild("Only_Police_Tag") then head.Only_Police_Tag:Destroy() end
+            end
+        end
+    end
+end)
+
+-- TAB 2: SLAP TOWER
+local SlapTitle = Instance.new("TextLabel", Tab2Container)
+SlapTitle.Size = UDim2.new(1, 0, 0, 25)
+SlapTitle.BackgroundTransparency = 1
+SlapTitle.Text = "⚡ Slap Tower Features"
+SlapTitle.TextColor3 = Color3.fromRGB(70, 130, 255)
+SlapTitle.TextSize = 13
+SlapTitle.TextXAlignment = Enum.TextXAlignment.Left
+SlapTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+
+createMenuButton("Anti Slap", Tab2Container, function(state)
+    if state then
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/amdzy088/Immune-slap-tower-/refs/heads/main/Immune%20slap%20tower%20work"))()
+        end)
+    end
+end)
+
+createMenuButton("Auto Wallhop", Tab2Container, function(state)
+    if state then
+        pcall(function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universal-Wallhop-Script-123263"))()
+        end)
+    end
+end)
+
 local espConnection
-createMenuButton("Highlights (Sáng người chơi)", Tab2Container, function(state)
+createMenuButton("Highlights (ESP Sáng)", Tab2Container, function(state)
     if state then
         espConnection = RunService.RenderStepped:Connect(function()
             for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= player and p.Character then
-                    if not p.Character:FindFirstChild("DucAnhHighlight") then
-                        local hl = Instance.new("Highlight")
-                        hl.Name = "DucAnhHighlight"
-                        hl.Adornee = p.Character
-                        hl.FillColor = Color3.fromRGB(255, 0, 0)
-                        hl.FillTransparency = 0.5
-                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        hl.OutlineTransparency = 0
-                        hl.Parent = p.Character
-                    end
+                if p ~= player and p.Character and not p.Character:FindFirstChild("DucAnhHighlight") then
+                    local hl = Instance.new("Highlight", p.Character)
+                    hl.Name = "DucAnhHighlight"
+                    hl.Adornee = p.Character
+                    hl.FillColor = Color3.fromRGB(0, 150, 255)
+                    hl.FillTransparency = 0.5
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
                 end
             end
         end)
@@ -264,37 +483,6 @@ createMenuButton("Highlights (Sáng người chơi)", Tab2Container, function(st
     end
 end)
 
--- 2. Float
-local floatPart = nil
-createMenuButton("Float (Đi trên không)", Tab2Container, function(state)
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = char.HumanoidRootPart
-    
-    if state then
-        if not floatPart then
-            floatPart = Instance.new("Part")
-            floatPart.Name = "FloatPlatform"
-            floatPart.Size = Vector3.new(5, 1, 5)
-            floatPart.Transparency = 1
-            floatPart.Anchored = true
-            floatPart.Parent = workspace
-        end
-        
-        RunService.RenderStepped:Connect(function()
-            if state and floatPart and hrp then
-                floatPart.CFrame = hrp.CFrame - Vector3.new(0, 3.5, 0)
-            end
-        end)
-    else
-        if floatPart then
-            floatPart:Destroy()
-            floatPart = nil
-        end
-    end
-end)
-
--- 3. Noclip
 local noclipConnection
 createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
     if state then
@@ -302,9 +490,7 @@ createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
             local char = player.Character
             if char then
                 for _, part in ipairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
+                    if part:IsA("BasePart") then part.CanCollide = false end
                 end
             end
         end)
@@ -313,76 +499,90 @@ createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
         local char = player.Character
         if char then
             for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.CanCollide = true
-                end
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then part.CanCollide = true end
             end
         end
     end
 end)
 
--- 4. Speed x2
-createMenuButton("Speed x2", Tab2Container, function(state)
-    pcall(function()
-        player.Character.Humanoid.WalkSpeed = state and 32 or 16
-    end)
-end)
+-- TAB 3: CÀI ĐẶT & MÔ TẢ UPDATE V1
+local SettingTitle = Instance.new("TextLabel", Tab3Container)
+SettingTitle.Size = UDim2.new(1, 0, 0, 25)
+SettingTitle.BackgroundTransparency = 1
+SettingTitle.Text = "⚡ Cài đặt Script"
+SettingTitle.TextColor3 = Color3.fromRGB(255, 100, 100)
+SettingTitle.TextSize = 13
+SettingTitle.TextXAlignment = Enum.TextXAlignment.Left
+SettingTitle.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
 
--- ==========================================
--- 🛠️ 3. LOGIC KÉO THẢ & BẬT TẮT NÚT TRÒN
--- ==========================================
-local dragging = false
-local dragInput, dragStart, startPos
-local isMoved = false
+local DescLabel = Instance.new("TextLabel", Tab3Container)
+DescLabel.Size = UDim2.new(1, 0, 0, 45)
+DescLabel.BackgroundTransparency = 1
+DescLabel.Text = "Update Này là V1 Và Mấy update sau sẽ đẹp hơn ✨"
+DescLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+DescLabel.TextSize = 12
+DescLabel.TextWrapped = true
+DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+DescLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
 
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        isMoved = false
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+local AlphaBox = Instance.new("TextBox", Tab3Container)
+AlphaBox.Size = UDim2.new(1, 0, 0, 36)
+AlphaBox.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+AlphaBox.PlaceholderText = "Độ trong suốt (0.0 - 0.9)"
+AlphaBox.Text = "0.1"
+AlphaBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+AlphaBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+AlphaBox.TextSize = 12
+AlphaBox.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
+Instance.new("UICorner", AlphaBox).CornerRadius = UDim.new(0, 10)
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then
-            isMoved = true
+AlphaBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        playClickSound()
+        local val = tonumber(AlphaBox.Text)
+        if val then
+            if val < 0 then val = 0 end
+            if val > 0.9 then val = 0.9 end
+            MenuFrame.BackgroundTransparency = val
+            LeftBar.BackgroundTransparency = val
         end
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale, 
-            startPos.X.Offset + delta.X, 
-            startPos.Y.Scale, 
-            startPos.Y.Offset + delta.Y
-        )
     end
+end)
+
+local ResetGuiBtn = Instance.new("TextButton", Tab3Container)
+ResetGuiBtn.Size = UDim2.new(1, 0, 0, 36)
+ResetGuiBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ResetGuiBtn.Text = "Đóng Script"
+ResetGuiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetGuiBtn.TextSize = 12
+ResetGuiBtn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+Instance.new("UICorner", ResetGuiBtn).CornerRadius = UDim.new(0, 10)
+
+ResetGuiBtn.MouseButton1Click:Connect(function()
+    playClickSound()
+    gui:Destroy()
+end)
+
+-- CHẠY LOADING
+task.spawn(function()
+    task.wait(0.3)
+    TweenService:Create(BarFill, TweenInfo.new(0.4), {Size = UDim2.new(0.3, 0, 1, 0)}):Play()
+    PercentLabel.Text = "Loading 30%"
+    task.wait(0.5)
+    
+    TweenService:Create(BarFill, TweenInfo.new(0.4), {Size = UDim2.new(0.7, 0, 1, 0)}):Play()
+    PercentLabel.Text = "Loading 70%"
+    task.wait(0.5)
+    
+    TweenService:Create(BarFill, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+    PercentLabel.Text = "Loading 100%"
+    task.wait(0.4)
+    
+    LoadScreen:Destroy()
+    MainFrame.Visible = true
 end)
 
 ActionButton.MouseButton1Click:Connect(function()
-    if isMoved then return end
-    
-    TweenService:Create(MainFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 45, 0, 45)}):Play()
-    task.wait(0.1)
-    TweenService:Create(MainFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 50, 0, 50)}):Play()
-    
+    playClickSound()
     MenuFrame.Visible = not MenuFrame.Visible
 end)
-
-CloseButton.MouseButton1Click:Connect(function()
-    MenuFrame.Visible = false
-end)
-
-print("🚀 Đã cập nhật Tab Info Rainbow thành công!")
