@@ -1,388 +1,314 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
 
 -- 🔔 THÔNG BÁO KIỂM TRA
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "DUC ANH HUB v3.1",
-        Text = "Đã cập nhật Tab Info Rainbow cực cháy!",
+        Title = "DUC ANH HUB v2.0",
+        Text = "Skibidi!",
         Duration = 5
     })
 end)
 
--- Xóa GUI cũ nếu chạy đè
+-- Xóa GUI cũ nếu có
 pcall(function()
-    if CoreGui:FindFirstChild("NutTronAnhV2") then
-        CoreGui.NutTronAnhV2:Destroy()
+    if CoreGui:FindFirstChild("NguoiNgoaiHanhTinh") then 
+        CoreGui.NguoiNgoaiHanhTinh:Destroy() 
     end
-    if player.PlayerGui:FindFirstChild("NutTronAnhV2") then
-        player.PlayerGui.NutTronAnhV2:Destroy()
+    if player.PlayerGui:FindFirstChild("NguoiNgoaiHanhTinh") then 
+        player.PlayerGui.NguoiNgoaiHanhTinh:Destroy() 
     end
 end)
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "NutTronAnhV2"
+gui.Name = "NguoiNgoaiHanhTinh"
 gui.ResetOnSpawn = false
+pcall(function() gui.Parent = CoreGui end)
+if not gui.Parent then gui.Parent = player:WaitForChild("PlayerGui") end
 
-local success = pcall(function()
-    gui.Parent = CoreGui
-end)
-if not success then
-    gui.Parent = player:WaitForChild("PlayerGui")
-end
+-- 1. NÚT TRÒN BẬT/TẮT MENU (Góc trái màn hình: X=50, Y=150)
+local CircleBtn = Instance.new("ImageButton")
+CircleBtn.Size = UDim2.new(0, 50, 0, 50)
+CircleBtn.Position = UDim2.new(0, 50, 0, 150)
+CircleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CircleBtn.BackgroundTransparency = 0
+CircleBtn.Image = "rbxassetid://93721397090642"
+CircleBtn.Active = true
+CircleBtn.Parent = gui
 
--- ==========================================
--- 🟢 1. NÚT TRÒN DI ĐỘNG (BỆ PHÕNG)
--- ==========================================
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 50, 0, 50)
-MainFrame.Position = UDim2.new(0.1, 0, 0.5, -25)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-MainFrame.BackgroundTransparency = 0.3
-MainFrame.Active = true
-MainFrame.Parent = gui
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(1, 0)
+Corner.Parent = CircleBtn
 
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(1, 0)
+local Stroke = Instance.new("UIStroke", CircleBtn)
+Stroke.Thickness = 3
 
-local ActionButton = Instance.new("ImageButton")
-ActionButton.Name = "ActionButton"
-ActionButton.Size = UDim2.new(0.85, 0, 0.85, 0)
-ActionButton.Position = UDim2.new(0.075, 0, 0.075, 0)
-ActionButton.BackgroundTransparency = 1
-ActionButton.Image = "rbxassetid://130940118"
-ActionButton.Active = true
-ActionButton.Parent = MainFrame
-
-Instance.new("UICorner", ActionButton).CornerRadius = UDim.new(1, 0)
-
-local FrameStroke = Instance.new("UIStroke", MainFrame)
-FrameStroke.Thickness = 3
-FrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-local connection
-connection = RunService.RenderStepped:Connect(function()
-    if not MainFrame or not MainFrame.Parent then
-        if connection then connection:Disconnect() end
+local rainbowConnection
+rainbowConnection = RunService.RenderStepped:Connect(function()
+    if not CircleBtn or not CircleBtn.Parent then
+        if rainbowConnection then rainbowConnection:Disconnect() end
         return
     end
-    local hue = (os.clock() % 4) / 4
-    FrameStroke.Color = Color3.fromHSV(hue, 1, 1)
+    local hue = (tick() % 5) / 5
+    Stroke.Color = Color3.fromHSV(hue, 1, 1)
 end)
 
--- ==========================================
--- 📂 2. GIAO DIỆN MENU & HỆ THỐNG TAB
--- ==========================================
-local MenuFrame = Instance.new("Frame")
-MenuFrame.Name = "MenuFrame"
-MenuFrame.Size = UDim2.new(0, 340, 0, 320)
-MenuFrame.Position = UDim2.new(0.5, -170, 0.5, -160)
-MenuFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-MenuFrame.BackgroundTransparency = 0.1
-MenuFrame.Visible = false
-MenuFrame.Active = true
-MenuFrame.Draggable = true
-MenuFrame.Parent = gui
+-- 2. VÒNG TRÒN FOV (Hiển thị tầm ngắm trên màn hình)
+-- Dùng Drawing API nếu executor hỗ trợ, hoặc vẽ Frame ẩn trên GUI. Dưới đây dùng Frame giao diện chuẩn cho an toàn mọi executor:
+local FOVCircleFrame = Instance.new("Frame")
+FOVCircleFrame.Size = UDim2.new(0, 150, 0, 150) -- Bán kính vòng tròn (đường kính 150px)
+FOVCircleFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVCircleFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+FOVCircleFrame.BackgroundTransparency = 1
+FOVCircleFrame.Visible = false
+FOVCircleFrame.Parent = gui
 
-Instance.new("UICorner", MenuFrame).CornerRadius = UDim.new(0, 18)
+local FOVStroke = Instance.new("UIStroke")
+FOVStroke.Thickness = 2
+FOVStroke.Color = Color3.fromRGB(0, 255, 255) -- Viền xanh ngọc ngầu lòi
+FOVStroke.Parent = FOVCircleFrame
 
-local MenuStroke = Instance.new("UIStroke", MenuFrame)
-MenuStroke.Thickness = 2
-MenuStroke.Color = Color3.fromRGB(70, 130, 255)
+local FOVCircleCorner = Instance.new("UICorner")
+FOVCircleCorner.CornerRadius = UDim.new(1, 0)
+FOVCircleCorner.Parent = FOVCircleFrame
 
--- Thanh bên trái (LeftBar)
-local LeftBar = Instance.new("Frame")
-LeftBar.Name = "LeftBar"
-LeftBar.Size = UDim2.new(0.22, 0, 1, 0)
-LeftBar.Position = UDim2.new(0, 0, 0, 0)
-LeftBar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-LeftBar.BorderSizePixel = 0
-LeftBar.Parent = MenuFrame
 
-local LeftBarCorner = Instance.new("UICorner", LeftBar)
-LeftBarCorner.CornerRadius = UDim.new(0, 18)
+-- 3. KHUNG MENU CHÍNH (Nằm chính giữa màn hình)
+local MainWindow = Instance.new("Frame")
+MainWindow.Size = UDim2.new(0, 380, 0, 240)
+MainWindow.Position = UDim2.new(0.5, -190, 0.5, -120)
+MainWindow.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainWindow.BorderSizePixel = 0
+MainWindow.Visible = true
+MainWindow.Parent = gui
 
-local UIListLayoutTab = Instance.new("UIListLayout")
-UIListLayoutTab.Padding = UDim.new(0, 10)
-UIListLayoutTab.HorizontalAlignment = Enum.HorizontalAlignment.Center
-UIListLayoutTab.VerticalAlignment = Enum.VerticalAlignment.Center
-UIListLayoutTab.Parent = LeftBar
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainWindow
 
--- Tiêu đề Menu
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(0.75, 0, 0, 50)
-TitleLabel.Position = UDim2.new(0.24, 10, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "⚡ DUC ANH HUB ⚡"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 15
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-TitleLabel.Parent = MenuFrame
+-- 4. THANH TAB BÊN TRÁI (Sidebar)
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(0, 110, 1, 0)
+TabBar.Position = UDim2.new(0, 0, 0, 0)
+TabBar.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+TabBar.BorderSizePixel = 0
+TabBar.Parent = MainWindow
 
--- Nút tắt Menu (Dấu X)
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 28, 0, 28)
-CloseButton.Position = UDim2.new(1, -36, 0, 11)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 13
-CloseButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-CloseButton.Parent = MenuFrame
-Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(1, 0)
+local TabBarCorner = Instance.new("UICorner")
+TabBarCorner.CornerRadius = UDim.new(0, 10)
+TabBarCorner.Parent = TabBar
 
--- Khung chứa Container Tab
-local ContainerHolder = Instance.new("Folder")
-ContainerHolder.Parent = MenuFrame
+-- Đường kẻ phân cách
+local Line = Instance.new("Frame")
+Line.Size = UDim2.new(0, 1, 1, 0)
+Line.Position = UDim2.new(1, 0, 0, 0)
+Line.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Line.BorderSizePixel = 0
+Line.Parent = TabBar
 
-local function createTabContainer()
-    local sf = Instance.new("ScrollingFrame")
-    sf.Size = UDim2.new(0.75, -10, 1, -65)
-    sf.Position = UDim2.new(0.24, 10, 0, 55)
-    sf.BackgroundTransparency = 1
-    sf.CanvasSize = UDim2.new(0, 0, 0, 280)
-    sf.ScrollBarThickness = 3
-    sf.Visible = false
-    sf.Parent = ContainerHolder
+-- Nút Tab 1: Main
+local Tab1Btn = Instance.new("TextButton")
+Tab1Btn.Size = UDim2.new(1, -16, 0, 32)
+Tab1Btn.Position = UDim2.new(0, 8, 0, 15)
+Tab1Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Tab1Btn.BorderSizePixel = 0
+Tab1Btn.Font = Enum.Font.GothamBold
+Tab1Btn.Text = "Main"
+Tab1Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab1Btn.TextSize = 13
+Tab1Btn.Parent = TabBar
 
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    layout.Parent = sf
-    return sf
-end
+local Tab1BtnCorner = Instance.new("UICorner")
+Tab1BtnCorner.CornerRadius = UDim.new(0, 6)
+Tab1BtnCorner.Parent = Tab1Btn
 
-local Tab1Container = createTabContainer() -- Tab 1: Info
-local Tab2Container = createTabContainer() -- Tab 2: Slap Tower
-Tab1Container.Visible = true
+-- 5. KHUNG HIỂN THỊ NỘI DUNG TAB 1
+local Tab1Content = Instance.new("ScrollingFrame")
+Tab1Content.Size = UDim2.new(1, -125, 1, -20)
+Tab1Content.Position = UDim2.new(0, 118, 0, 10)
+Tab1Content.BackgroundTransparency = 1
+Tab1Content.BorderSizePixel = 0
+Tab1Content.CanvasSize = UDim2.new(0, 0, 0, 200)
+Tab1Content.ScrollBarThickness = 4
+Tab1Content.Visible = true
+Tab1Content.Parent = MainWindow
 
-local function createTabButton(name, targetContainer)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.85, 0, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 12
-    btn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-    btn.Parent = LeftBar
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+-- Tiêu đề Tab 1
+local Tab1Title = Instance.new("TextLabel")
+Tab1Title.Size = UDim2.new(1, 0, 0, 25)
+Tab1Title.Position = UDim2.new(0, 0, 0, 0)
+Tab1Title.BackgroundTransparency = 1
+Tab1Title.Font = Enum.Font.GothamBold
+Tab1Title.Text = "Main Features"
+Tab1Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Tab1Title.TextSize = 14
+Tab1Title.TextXAlignment = Enum.TextXAlignment.Left
+Tab1Title.Parent = Tab1Content
 
-    btn.MouseButton1Click:Connect(function()
-        Tab1Container.Visible = false
-        Tab2Container.Visible = false
-        targetContainer.Visible = true
-    end)
-end
+-- Tính năng 1: WalkSpeed
+local SpeedToggle = Instance.new("TextButton")
+SpeedToggle.Size = UDim2.new(1, -5, 0, 32)
+SpeedToggle.Position = UDim2.new(0, 0, 0, 35)
+SpeedToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+SpeedToggle.BorderSizePixel = 0
+SpeedToggle.Font = Enum.Font.Gotham
+SpeedToggle.Text = "  Toc do chay: Tat"
+SpeedToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SpeedToggle.TextSize = 12
+SpeedToggle.TextXAlignment = Enum.TextXAlignment.Left
+SpeedToggle.Parent = Tab1Content
 
-createTabButton("Info", Tab1Container)
-createTabButton("Slap Tower", Tab2Container)
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 6)
+SpeedCorner.Parent = SpeedToggle
 
--- ==========================================
--- 📄 NỘI DUNG TAB 1: INFO (RAINBOW TEXT)
--- ==========================================
-local InfoLabel = Instance.new("TextLabel")
-InfoLabel.Size = UDim2.new(1, 0, 0, 220)
-InfoLabel.BackgroundTransparency = 1
-InfoLabel.Text = "Script Việt Nam Này Lấy Cảm Hứng Từ Slap Tower và nên có vài chức năng vật vì đây là bản v1 Tôi sẽ update nhiều hơn\n\nTiktok:Yuya_Lwo"
-InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoLabel.TextSize = 13
-InfoLabel.TextWrapped = true
-InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
-InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
-InfoLabel.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
-InfoLabel.Parent = Tab1Container
-
--- Hiệu ứng Rainbow cho chữ ở Tab Info
-local infoConnection
-infoConnection = RunService.RenderStepped:Connect(function()
-    if not InfoLabel or not InfoLabel.Parent then
-        if infoConnection then infoConnection:Disconnect() end
-        return
+local speedEnabled = false
+local speedConnection
+SpeedToggle.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    if speedEnabled then
+        SpeedToggle.Text = "  Toc do chay: Bat"
+        SpeedToggle.BackgroundColor3 = Color3.fromRGB(0, 120, 60)
+        SpeedToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        speedConnection = RunService.RenderStepped:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = 50
+            end
+        end)
+    else
+        SpeedToggle.Text = "  Toc do chay: Tat"
+        SpeedToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        SpeedToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+        if speedConnection then speedConnection:Disconnect() end
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = 16
+        end
     end
-    local hue = (os.clock() % 4) / 4
-    InfoLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
 end)
 
--- ==========================================
--- 🛠️ NỘI DUNG TAB 2: SLAP TOWER (CHỨC NĂNG)
--- ==========================================
-local function createMenuButton(name, parentContainer, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(230, 230, 230)
-    btn.TextSize = 13
-    btn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium)
-    btn.Parent = parentContainer
-    
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
-    
-    local activeState = false
-    btn.MouseButton1Click:Connect(function()
-        activeState = not activeState
-        local targetColor = activeState and Color3.fromRGB(70, 130, 255) or Color3.fromRGB(35, 35, 42)
-        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = targetColor}):Play()
-        if callback then callback(activeState, btn) end
-    end)
-    return btn
-end
+-- Tính năng 2: Aim Lock với FOV Circle (Khóa vào đầu ai nằm trong vòng tròn)
+local AimToggle = Instance.new("TextButton")
+AimToggle.Size = UDim2.new(1, -5, 0, 32)
+AimToggle.Position = UDim2.new(0, 0, 0, 75)
+AimToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+AimToggle.BorderSizePixel = 0
+AimToggle.Font = Enum.Font.Gotham
+AimToggle.Text = "  Aim Lock FOV: Tat"
+AimToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+AimToggle.TextSize = 12
+AimToggle.TextXAlignment = Enum.TextXAlignment.Left
+AimToggle.Parent = Tab1Content
 
--- 1. Highlights
-local espConnection
-createMenuButton("Highlights (Sáng người chơi)", Tab2Container, function(state)
-    if state then
-        espConnection = RunService.RenderStepped:Connect(function()
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= player and p.Character then
-                    if not p.Character:FindFirstChild("DucAnhHighlight") then
-                        local hl = Instance.new("Highlight")
-                        hl.Name = "DucAnhHighlight"
-                        hl.Adornee = p.Character
-                        hl.FillColor = Color3.fromRGB(255, 0, 0)
-                        hl.FillTransparency = 0.5
-                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        hl.OutlineTransparency = 0
-                        hl.Parent = p.Character
+local AimCorner = Instance.new("UICorner")
+AimCorner.CornerRadius = UDim.new(0, 6)
+AimCorner.Parent = AimToggle
+
+local aimEnabled = false
+local aimConnection
+
+local function getTargetInFOV()
+    local target = nil
+    local shortestDist = 75 -- Bán kính FOV tính bằng pixel (150 / 2)
+    
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            -- Ưu tiên khóa vào Đầu (Head), nếu không có thì lấy HumanoidRootPart
+            local head = p.Character:FindFirstChild("Head") or p.Character:FindFirstChild("HumanoidRootPart")
+            local humanoid = p.Character:FindFirstChild("Humanoid")
+            
+            if head and humanoid and humanoid.Health > 0 then
+                local pos, onScreen = camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    -- Tính khoảng cách từ tâm màn hình đến vị trí nhân vật
+                    local screenCenter = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+                    local dist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                    
+                    -- Nếu nằm trong vòng tròn FOV thì chọn làm mục tiêu gần nhất
+                    if dist <= shortestDist then
+                        shortestDist = dist
+                        target = head
                     end
                 end
             end
-        end)
-    else
-        if espConnection then espConnection:Disconnect() end
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p.Character and p.Character:FindFirstChild("DucAnhHighlight") then
-                p.Character.DucAnhHighlight:Destroy()
-            end
         end
     end
-end)
+    return target
+end
 
--- 2. Float
-local floatPart = nil
-createMenuButton("Float (Đi trên không)", Tab2Container, function(state)
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = char.HumanoidRootPart
-    
-    if state then
-        if not floatPart then
-            floatPart = Instance.new("Part")
-            floatPart.Name = "FloatPlatform"
-            floatPart.Size = Vector3.new(5, 1, 5)
-            floatPart.Transparency = 1
-            floatPart.Anchored = true
-            floatPart.Parent = workspace
-        end
+AimToggle.MouseButton1Click:Connect(function()
+    aimEnabled = not aimEnabled
+    if aimEnabled then
+        AimToggle.Text = "  Aim Lock FOV: Bat"
+        AimToggle.BackgroundColor3 = Color3.fromRGB(0, 120, 60)
+        AimToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        FOVCircleFrame.Visible = true -- Hiện vòng tròn FOV lên màn hình
         
-        RunService.RenderStepped:Connect(function()
-            if state and floatPart and hrp then
-                floatPart.CFrame = hrp.CFrame - Vector3.new(0, 3.5, 0)
+        aimConnection = RunService.RenderStepped:Connect(function()
+            local target = getTargetInFOV()
+            if target then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
             end
         end)
     else
-        if floatPart then
-            floatPart:Destroy()
-            floatPart = nil
-        end
+        AimToggle.Text = "  Aim Lock FOV: Tat"
+        AimToggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        AimToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+        FOVCircleFrame.Visible = false -- Tắt vòng tròn FOV đi
+        if aimConnection then aimConnection:Disconnect() end
     end
 end)
 
--- 3. Noclip
-local noclipConnection
-createMenuButton("Noclip (Đi xuyên tường)", Tab2Container, function(state)
-    if state then
-        noclipConnection = RunService.Stepped:Connect(function()
-            local char = player.Character
-            if char then
-                for _, part in ipairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if noclipConnection then noclipConnection:Disconnect() end
-        local char = player.Character
-        if char then
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
-end)
+-- 6. HÀM KÉO THẢ CHUNG
+local function MakeDraggable(obj)
+    local dragging = false
+    local dragStart, startPos, dragInput
 
--- 4. Speed x2
-createMenuButton("Speed x2", Tab2Container, function(state)
-    pcall(function()
-        player.Character.Humanoid.WalkSpeed = state and 32 or 16
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = obj.Position
+            dragInput = input
+        end
     end)
-end)
 
--- ==========================================
--- 🛠️ 3. LOGIC KÉO THẢ & BẬT TẮT NÚT TRÒN
--- ==========================================
-local dragging = false
-local dragInput, dragStart, startPos
-local isMoved = false
-
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        isMoved = false
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then
-            isMoved = true
+    obj.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
         end
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale, 
-            startPos.X.Offset + delta.X, 
-            startPos.Y.Scale, 
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
+    end)
 
-ActionButton.MouseButton1Click:Connect(function()
-    if isMoved then return end
-    
-    TweenService:Create(MainFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 45, 0, 45)}):Play()
-    task.wait(0.1)
-    TweenService:Create(MainFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 50, 0, 50)}):Play()
-    
-    MenuFrame.Visible = not MenuFrame.Visible
-end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            obj.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    MenuFrame.Visible = false
-end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input == dragInput then
+            dragging = false
+        end
+    end)
+end
 
-print("🚀 Đã cập nhật Tab Info Rainbow thành công!")
+MakeDraggable(MainWindow)
+MakeDraggable(CircleBtn)
+
+-- 7. SỰ KIỆN BẬT / TẮT MENU
+CircleBtn.MouseButton1Click:Connect(function()
+    MainWindow.Visible = not MainWindow.Visible
+end)
